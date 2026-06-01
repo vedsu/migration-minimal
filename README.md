@@ -1,2 +1,2 @@
 # migration-minimal
-flask-mongo aws-secret deployment of aws app runner
+ProfsTraining Migration -> Initial Setup for ProfsTraining, But Combined Setup for HC Profs and PharmaProfs
