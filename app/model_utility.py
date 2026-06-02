@@ -69,8 +69,8 @@ class Utility:
 
             query = {}
 
-            if website:
-                query["website"] = website
+            # if website:
+            #     query["website"] = website
 
             coupon_data = list(mongo.db.coupon_data.find(query))
 
@@ -106,8 +106,8 @@ class Utility:
                 "sessionLive": True
             }
 
-            if website:
-                query["website"] = website
+            # if website:
+            #     query["website"] = website
 
             mongo.db.webinar_data.update_many(
                 query,
