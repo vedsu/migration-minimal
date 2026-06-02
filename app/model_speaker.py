@@ -23,8 +23,8 @@ class Speaker:
                 "id": s_id
             }
 
-            if website:
-                query["website"] = website
+            # if website:
+            #     query["website"] = website
 
             speaker = mongo.db.speaker_data.find_one(query)
 
@@ -41,7 +41,7 @@ class Speaker:
                 "contact": speaker.get("contact"),
                 "photo": speaker.get("photo"),
                 "history": speaker.get("history"),
-                "website": speaker.get("website")
+                # "website": speaker.get("website")
             }
 
             return speaker_dict
@@ -58,8 +58,8 @@ class Speaker:
 
             query = {}
 
-            if website:
-                query["website"] = website
+            # if website:
+            #     query["website"] = website
 
             speaker_data = list(
                 mongo.db.speaker_data.find(query).sort("name", 1)
@@ -75,7 +75,7 @@ class Speaker:
                     "status": speaker.get("status"),
                     "bio": speaker.get("bio"),
                     "photo": speaker.get("photo"),
-                    "website": speaker.get("website")
+                    # "website": speaker.get("website")
                 }
 
                 speaker_list.append(speaker_dict)
@@ -102,8 +102,8 @@ class Speaker:
                 "email": email
             }
 
-            if website:
-                speaker_query["website"] = website
+            # if website:
+            #     speaker_query["website"] = website
 
             speaker_data = list(
                 mongo.db.speaker_data.find(speaker_query, projections)
