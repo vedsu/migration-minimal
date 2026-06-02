@@ -33,6 +33,124 @@ def get_website_url(website):
 
 class Login:
 
+#     @staticmethod
+#     def register(
+#         register_name,
+#         register_email,
+#         register_role,
+#         register_number,
+#         register_password,
+#         register_type,
+#         website
+#     ):
+#         website = normalize_website(website)
+#         websiteUrl = get_website_url(website)
+
+#         if not website or not websiteUrl:
+#             return ({
+#                 "success": False,
+#                 "message": "Invalid or missing Website"
+#             }), 400
+
+#         try:
+#             user = mongo.db.user_data.find_one({
+#                 "email": register_email,
+#                 "website": website
+#             })
+
+#             if user:
+#                 return ({
+#                     "success": False,
+#                     "message": "User already registered, Please Login"
+#                 }), 203
+#             if not apply_mail_config_by_website(website):
+#                 return ({
+#                     "success": False,
+#                     "message": "Mail configuration not found for selected Website"
+#                 }), 400
+
+#             sender = get_mail_sender_by_website(website)
+
+
+#             msg = Message(
+#                 'Your Account Credentials',
+#                 sender=sender,
+#                 recipients=[register_email]
+#             )
+
+#             msg.body = f"""
+#             Dear Customer {register_name},
+
+#             Welcome to our website!
+
+#             Here are your account credentials:
+
+#             Email: {register_email}
+#             Password: {register_password}
+#             Website: {websiteUrl}
+
+#             Please keep this information secure and do not share it with anyone.
+
+#             Thanks & Regards!
+#             Webinar Organizer Team
+#             """
+
+#             msg.html = render_template_string("""
+#             <p>Dear Customer {{ name }},</p>
+#             <p>Welcome to our website!</p>
+#             <p>Here are your account credentials:</p>
+#             <ul>
+#                 <li><b>Email:</b> {{ email }}</li>
+#                 <li><b>Password:</b> {{ password }}</li>
+#                 <li><b>Website:</b> <a href="{{ website }}">{{ website }}</a></li>
+#             </ul>
+#             <p>Please keep this information secure and do not share it with anyone.</p>
+#             <p>Thanks & Regards!<br>Webinar Organizer Team</p>
+#             """, name=register_name, email=register_email,
+#                  password=register_password, website=websiteUrl)
+
+#             mail.send(msg)
+
+#             user_response = {
+#                 "name": register_name,
+#                 "role": register_role,
+#                 "email": register_email,
+#                 "contact": register_number,
+#                 "website": website
+#             }
+
+#             user_data = {
+#                 "name": register_name,
+#                 "role": register_role,
+#                 "email": register_email,
+#                 "contact": register_number,
+#                 "password": register_password,
+#                 "UserType": register_type,
+#                 "website": website
+#             }
+
+#             if register_type == "Attendee":
+#                 user_data.update({
+#                     "history_purchased": [],
+#                     "history_pending": [],
+#                     "newsletter_purchased": [],
+#                     "newsletter_pending": []
+#                 })
+
+#             mongo.db.user_data.insert_one(user_data)
+
+#             return ({
+#                 "success": True,
+#                 "message": user_response
+#             }), 201
+
+#         except Exception as e:
+#             return ({
+#                 "success": False,
+#                 "message": str(e)
+#             }), 203
+
+    
     @staticmethod
     def register(
         register_name,
@@ -53,14 +171,6 @@ class Login:
             }), 400
 
         try:
-            if not apply_mail_config_by_website(website):
-                return ({
-                    "success": False,
-                    "message": "Mail configuration not found for selected Website"
-                }), 400
-
-            sender = get_mail_sender_by_website(website)
-
             user = mongo.db.user_data.find_one({
                 "email": register_email,
                 "website": website
@@ -71,45 +181,6 @@ class Login:
                     "success": False,
                     "message": "User already registered, Please Login"
                 }), 203
-
-            msg = Message(
-                'Your Account Credentials',
-                sender=sender,
-                recipients=[register_email]
-            )
-
-            msg.body = f"""
-            Dear Customer {register_name},
-
-            Welcome to our website!
-
-            Here are your account credentials:
-
-            Email: {register_email}
-            Password: {register_password}
-            Website: {websiteUrl}
-
-            Please keep this information secure and do not share it with anyone.
-
-            Thanks & Regards!
-            Webinar Organizer Team
-            """
-
-            msg.html = render_template_string("""
-            <p>Dear Customer {{ name }},</p>
-            <p>Welcome to our website!</p>
-            <p>Here are your account credentials:</p>
-            <ul>
-                <li><b>Email:</b> {{ email }}</li>
-                <li><b>Password:</b> {{ password }}</li>
-                <li><b>Website:</b> <a href="{{ website }}">{{ website }}</a></li>
-            </ul>
-            <p>Please keep this information secure and do not share it with anyone.</p>
-            <p>Thanks & Regards!<br>Webinar Organizer Team</p>
-            """, name=register_name, email=register_email,
-                 password=register_password, website=websiteUrl)
-
-            mail.send(msg)
 
             user_response = {
                 "name": register_name,
@@ -126,7 +197,8 @@ class Login:
                 "contact": register_number,
                 "password": register_password,
                 "UserType": register_type,
-                "website": website
+                "website": website,
+                "websiteUrl": websiteUrl
             }
 
             if register_type == "Attendee":
@@ -139,9 +211,75 @@ class Login:
 
             mongo.db.user_data.insert_one(user_data)
 
+            mail_status = {
+                "success": False,
+                "message": "Mail not sent"
+            }
+
+            try:
+                if apply_mail_config_by_website(website):
+                    sender = get_mail_sender_by_website(website)
+
+                    msg = Message(
+                        'Your Account Credentials',
+                        sender=sender,
+                        recipients=[register_email]
+                    )
+
+                    msg.body = f"""
+                    Dear Customer {register_name},
+
+                    Welcome to our website!
+
+                    Here are your account credentials:
+
+                    Email: {register_email}
+                    Password: {register_password}
+                    Website: {websiteUrl}
+
+                    Please keep this information secure and do not share it with anyone.
+
+                    Thanks & Regards!
+                    Webinar Organizer Team
+                    """
+
+                    msg.html = render_template_string("""
+                    <p>Dear Customer {{ name }},</p>
+                    <p>Welcome to our website!</p>
+                    <p>Here are your account credentials:</p>
+                    <ul>
+                        <li><b>Email:</b> {{ email }}</li>
+                        <li><b>Password:</b> {{ password }}</li>
+                        <li><b>Website:</b> <a href="{{ website }}">{{ website }}</a></li>
+                    </ul>
+                    <p>Please keep this information secure and do not share it with anyone.</p>
+                    <p>Thanks & Regards!<br>Webinar Organizer Team</p>
+                    """, name=register_name, email=register_email,
+                         password=register_password, website=websiteUrl)
+
+                    mail.send(msg)
+
+                    mail_status = {
+                        "success": True,
+                        "message": "Mail sent successfully"
+                    }
+
+                else:
+                    mail_status = {
+                        "success": False,
+                        "message": "Mail configuration not found for selected Website"
+                    }
+
+            except Exception as mail_error:
+                mail_status = {
+                    "success": False,
+                    "message": str(mail_error)
+                }
+
             return ({
                 "success": True,
-                "message": user_response
+                "message": user_response,
+                "mail_status": mail_status
             }), 201
 
         except Exception as e:
@@ -149,7 +287,6 @@ class Login:
                 "success": False,
                 "message": str(e)
             }), 203
-
     @staticmethod
     def authenticate(login_email, login_password, login_type, website):
         website = normalize_website(website)
