@@ -229,6 +229,19 @@ def home():
     return jsonify(webinar_list, speaker_list), 200
 
 
+@app.route('/speaker')
+def speaker():
+    website = get_website_from_request()
+
+    if not website:
+        return invalid_website_response()
+
+    # response = Utility.update_live_status()
+    # webinar_list = Webinar.view_webinar(website)
+    speaker_list = Speaker.view_speaker(website)
+
+    return jsonify(speaker_list), 200
+
 @app.route('/coupon')
 def coupon():
     website = get_website_from_request()
