@@ -224,9 +224,9 @@ def home():
 
     response = Utility.update_live_status()
     webinar_list = Webinar.view_webinar(website)
-    speaker_list = Speaker.view_speaker(website)
+    # speaker_list = Speaker.view_speaker(website)
 
-    return jsonify(webinar_list, speaker_list), 200
+    return jsonify(webinar_list), 200
 
 
 @app.route('/speaker')
