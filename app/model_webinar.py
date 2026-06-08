@@ -48,8 +48,8 @@ class Webinar:
                 "name": speaker
             }
 
-            if website:
-                speaker_query["website"] = website
+            # if website:
+            #     speaker_query["website"] = website
 
             speaker_detail = mongo.db.speaker_data.find_one(
                 speaker_query,
