@@ -56,6 +56,7 @@ class Webinar:
                 {
                     "_id": 0,
                     "photo": 1,
+                    "bio":1,
                     "id": 1
                 }
             )
@@ -70,6 +71,7 @@ class Webinar:
                 "speaker": speaker,
                 "speaker_id": speaker_detail.get("id"),
                 "speaker_image": speaker_detail.get("photo"),
+                "speaker_bio":speaker_detail.get("bio"),
                 "website": webinar.get("website"),
 
                 "date": webinar.get("date_time"),
