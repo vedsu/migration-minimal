@@ -19,7 +19,8 @@ class Webinar:
             website = normalize_website(website)
 
             query = {
-                "id": w_id
+                # "id": w_id
+                "webinar_url": w_id
             }
 
             if website:
