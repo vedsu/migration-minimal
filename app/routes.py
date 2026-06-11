@@ -357,16 +357,22 @@ def subscriber():
 
     data = request.json or {}
 
-    subscriber_email = data.get("Subscriber")
+    subscriber_email = data.get("subscriber_email")
     subscriber_name = data.get("subscriber_name")
-    subscription_type = data.get("subscription_type")
+    subscriber_phone = data.get("subscriber_phone")
     subscriber_jobtitle = data.get("subscriber_jobtitle")
+    subscriber_country = data.get("subscriber_country")
+    subscription_type = data.get("subscription_type")
+    
+    
 
     response = Utility.subscribe_list(
         subscriber_email,
         subscriber_name,
-        subscription_type,
+        subscriber_phone,
         subscriber_jobtitle,
+        subscriber_country,
+        subscription_type,
         website
     )
 
