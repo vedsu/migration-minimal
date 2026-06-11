@@ -495,9 +495,11 @@ class Utility:
     def subscribe_list(
         subscriber_email,
         subscriber_name,
-        subscription_type,
+        subscriber_phone,
         subscriber_jobtitle,
-        website=None
+        subscriber_country,
+        subscription_type,
+        website = None
     ):
         current_datetime = datetime.now()
 
@@ -507,7 +509,9 @@ class Utility:
             subscriber_data = {
                 "email": subscriber_email,
                 "name": subscriber_name,
+                "phone": subscriber_phone,
                 "jobtitle": subscriber_jobtitle,
+                "country": subscriber_country,
                 "subscription_type": subscription_type,
                 "type": "subscriber",
                 "date": current_datetime
