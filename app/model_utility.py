@@ -260,7 +260,7 @@ class Utility:
         pdf.save()
         buffer.seek(0)
 
-        bucket_name = "webinarprofs"
+        bucket_name = "webinarprof"
         object_key = f'websiteorderist/{invoice_number}.pdf'
 
         s3_client.put_object(
@@ -441,7 +441,7 @@ class Utility:
         pdf.save()
         buffer.seek(0)
 
-        bucket_name = "webinarprofs"
+        bucket_name = "webinarprof"
         object_key = f'websiteorder/{invoice_number}.pdf'
 
         s3_client.put_object(

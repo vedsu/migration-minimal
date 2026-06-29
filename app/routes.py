@@ -1362,7 +1362,7 @@ def create_newsletter():
     res = ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
     n_id = res + "_" + id
 
-    bucket_name = "webinarprofs"
+    bucket_name = "webinarprof"
     object_key = ''.join(newsletter_topic.split(" ")) + n_id
 
     try:
