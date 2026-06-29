@@ -290,12 +290,12 @@ def user_register():
     if not website:
         return invalid_website_response()
 
-    register_name = request.form.get("Name")
-    register_email = request.form.get("Email")
-    register_role = request.form.get("Role")
-    register_number = request.form.get("Contact")
-    register_password = request.form.get("Password")
-    register_type = request.form.get("UserType")
+    register_name = get_request_value("Name")
+    register_email = get_request_value("Email")
+    register_role = get_request_value("Role")
+    register_number = get_request_value("Contact")
+    register_password = get_request_value("Password")
+    register_type = get_request_value("UserType")
 
     response = Login.register(
         register_name,
@@ -317,9 +317,9 @@ def user_login():
     if not website:
         return invalid_website_response()
 
-    login_email = request.form.get("Email")
-    login_password = request.form.get("Password")
-    login_type = request.form.get("UserType")
+    login_email = get_request_value("Email")
+    login_password = get_request_value("Password")
+    login_type = get_request_value("UserType")
 
     response_login = Login.authenticate(
         login_email,
