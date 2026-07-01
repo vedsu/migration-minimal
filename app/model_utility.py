@@ -240,8 +240,9 @@ class Utility:
         text = pdf.beginText(width - 180, height - 420 - y_shift)
         text.setFont("Helvetica-Bold", 11)
         text.textLine(f'Subtotal: ${int(total_price)}')
-        text.textLine(f'Discount: -${int(discount)}')
-        text.textLine(f'Grand Total: ${int(orderamount)}')
+        if int(discount) > 0:
+            text.textLine(f'Discount: -${int(discount)}')
+            text.textLine(f'Grand Total: ${int(orderamount)}')
         pdf.drawText(text)
 
         thankYouNote = 'Thank you for your Purchase'
@@ -421,8 +422,9 @@ class Utility:
         text = pdf.beginText(width - 180, height - 420 - y_shift)
         text.setFont("Helvetica-Bold", 11)
         text.textLine(f'Subtotal: ${int(total_price)}')
-        text.textLine(f'Discount: -${int(discount)}')
-        text.textLine(f'Grand Total: ${int(orderamount)}')
+        if int(discount) > 0:
+            text.textLine(f'Discount: -${int(discount)}')
+            text.textLine(f'Grand Total: ${int(orderamount)}')
         pdf.drawText(text)
 
         thankYouNote = 'Thank you for your Purchase'
