@@ -651,6 +651,7 @@ def corporateorder():
         quantityTranscript = request.form.get('quantityTranscript')
 
         if sessionTranscript == "true":
+            total_price += int(priceTranscript)
             total_attendee += int(quantityTranscript)
             session_data.append({"Transcript": priceTranscript})
 
@@ -844,78 +845,132 @@ def order():
                 "message": "Mail configuration not found for selected Website."
             }), 400
 
-        paymentstatus = None
-        current_time_ist = None
-        invoice_number = None
-        country = None
-        zip_code = None
-        discount = 0
-        total_price = 0
-        customername = None
-        billingemail = None
-        session_data = []
+        # Detect format: JSON body with 'webinars' array (new, from PaymentSuccess)
+        # vs multipart FormData (old, from Cart pending order)
+        json_data = request.get_json(silent=True) or {}
+        webinars_from_json = json_data.get("webinars")
 
-        response_confirmationmail = {
-            "success": False,
-            "message": "Order Not Placed"
-        }
+        id = str(get_next_id("order_data")) + "_O"
 
         now_utc = datetime.datetime.now(pytz.utc)
         orderdate = now_utc.date()
         ordertime = now_utc.time()
         ordertimezone = now_utc.tzinfo
 
-        id = str(get_next_id("order_data")) + "_O"
+        discount = 0
+        total_price = 0
+        session_data = []
+        current_time_ist = None
+        invoice_number = None
+        country = None
+        zip_code = None
+        customername = None
+        billingemail = None
+        document = ""
+        document_ist = ""
+        webinardate = None
+        webinars_list = []
+        response_confirmationmail = {
+            "success": False,
+            "message": "Order Not Placed"
+        }
 
-        customeremail = request.form.get('customeremail')
-        paymentstatus = request.form.get("paymentstatus")
-        Webinar = request.form.get("topic")
-        orderamount = request.form.get("orderamount")
-        webinardate = request.form.get("webinardate")
+        if webinars_from_json is not None:
+            # ---- NEW JSON FORMAT (purchased order from PaymentSuccess) ----
+            customeremail = json_data.get('customeremail')
+            paymentstatus = json_data.get("paymentstatus")
+            orderamount = str(json_data.get("orderamount", "0"))
+            billingemail = json_data.get("billingemail")
+            customername = json_data.get("customername")
+            country = json_data.get("country")
+            zip_code = json_data.get("zipcode")
+            order_datetimezone_raw = json_data.get("order_datetimezone")
+            invoice_number = json_data.get("invoice_number")
+            webinars_list = webinars_from_json
 
-        sessionLive = request.form.get("sessionLive")
-        priceLive = request.form.get('priceLive')
+            # Calculate undiscounted total from all training option totals
+            for webinar in webinars_list:
+                for opt in webinar.get("trainingOptions", []):
+                    total_price += int(opt.get("totalPrice", 0))
+                    session_data.append({opt.get("optionName", ""): opt.get("totalPrice")})
 
-        if sessionLive == "true":
-            total_price += int(priceLive)
-            session_data.append({"Live": priceLive})
+            discount = total_price - int(orderamount)
 
-        sessionRecording = request.form.get("sessionRecording")
-        priceRecording = request.form.get('priceRecording')
+            topics = [w.get("topic", "") for w in webinars_list]
+            Webinar = "; ".join(topics)
 
-        if sessionRecording == "true":
-            total_price += int(priceRecording)
-            session_data.append({"Recording": priceRecording})
+            comma_separated_keys = ", ".join(
+                opt.get("optionName", "")
+                for w in webinars_list
+                for opt in w.get("trainingOptions", [])
+            )
 
-        sessionDigitalDownload = request.form.get('sessionDigitalDownload')
-        priceDigitalDownload = request.form.get('priceDigitalDownload')
+            webinardate = webinars_list[0].get("webinardate") if webinars_list else None
 
-        if sessionDigitalDownload == "true":
-            total_price += int(priceDigitalDownload)
-            session_data.append({"DigitalDownload": priceDigitalDownload})
-
-        sessionTranscript = request.form.get("sessionTranscript")
-        priceTranscript = request.form.get('priceTranscript')
-
-        if sessionTranscript == "true":
-            session_data.append({"Transcript": priceTranscript})
-
-        keys = [list(item.keys())[0] for item in session_data]
-        comma_separated_keys = ', '.join(keys)
-
-        discount = int(total_price) - int(orderamount)
-
-        if paymentstatus == "purchased":
+        else:
+            # ---- OLD FORMDATA FORMAT (Cart pending/purchased order) ----
+            customeremail = request.form.get('customeremail')
+            paymentstatus = request.form.get("paymentstatus")
+            Webinar = request.form.get("topic")
+            orderamount = request.form.get("orderamount")
+            webinardate = request.form.get("webinardate")
             billingemail = request.form.get("billingemail")
             customername = request.form.get("customername")
             country = request.form.get("country")
             zip_code = request.form.get("zipcode")
+            order_datetimezone_raw = request.form.get("order_datetimezone")
+            invoice_number = request.form.get("invoice_number")
 
-            order_datetimezone = request.form.get("order_datetimezone")
-            date_time_str = order_datetimezone
+            sessionLive = request.form.get("sessionLive")
+            priceLive = request.form.get('priceLive')
+            if sessionLive == "true":
+                total_price += int(priceLive or 0)
+                session_data.append({"Live": priceLive})
 
+            sessionRecording = request.form.get("sessionRecording")
+            priceRecording = request.form.get('priceRecording')
+            if sessionRecording == "true":
+                total_price += int(priceRecording or 0)
+                session_data.append({"Recording": priceRecording})
+
+            sessionDigitalDownload = request.form.get('sessionDigitalDownload')
+            priceDigitalDownload = request.form.get('priceDigitalDownload')
+            if sessionDigitalDownload == "true":
+                total_price += int(priceDigitalDownload or 0)
+                session_data.append({"DigitalDownload": priceDigitalDownload})
+
+            sessionTranscript = request.form.get("sessionTranscript")
+            priceTranscript = request.form.get('priceTranscript')
+            if sessionTranscript == "true":
+                total_price += int(priceTranscript or 0)
+                session_data.append({"Transcript": priceTranscript})
+
+            discount = int(total_price) - int(orderamount or 0)
+
+            keys = [list(item.keys())[0] for item in session_data]
+            comma_separated_keys = ', '.join(keys)
+
+            # Build a webinars list for consistent DB storage
+            training_options = []
+            if sessionLive == "true":
+                training_options.append({"optionName": "Live Session", "price": priceLive, "totalPrice": priceLive})
+            if sessionRecording == "true":
+                training_options.append({"optionName": "Recording", "price": priceRecording, "totalPrice": priceRecording})
+            if sessionDigitalDownload == "true":
+                training_options.append({"optionName": "Digital Download", "price": priceDigitalDownload, "totalPrice": priceDigitalDownload})
+            if sessionTranscript == "true":
+                training_options.append({"optionName": "Transcript PDF", "price": priceTranscript, "totalPrice": priceTranscript})
+
+            webinars_list = [{
+                "topic": Webinar,
+                "webinardate": webinardate,
+                "trainingOptions": training_options
+            }]
+
+        # ---- COMMON: PDF generation for purchased orders ----
+        if paymentstatus == "purchased" and order_datetimezone_raw:
             date_time_format = "%a, %d %b %Y %H:%M:%S %Z"
-            date_time_obj = datetime.datetime.strptime(date_time_str, date_time_format)
+            date_time_obj = datetime.datetime.strptime(order_datetimezone_raw, date_time_format)
 
             gmt_timezone = pytz.timezone('GMT')
             est_timezone = pytz.timezone('US/Eastern')
@@ -929,13 +984,12 @@ def order():
             ordertime = est_datetime.time()
             ordertimezone = est_datetime.tzinfo
             order_datetime_str = f"{orderdate} {ordertime} EST"
-
-            invoice_number = request.form.get("invoice_number")
-            websiteUrl = get_website_url(website)
             current_time_ist = ist_datetime
 
+            websiteUrl = get_website_url(website)
+
             document = Utility.generate_pdf(
-                Webinar,
+                webinars_list,
                 customername,
                 country,
                 websiteUrl,
@@ -950,7 +1004,7 @@ def order():
             )
 
             document_ist = Utility.generatelocal_pdf(
-                Webinar,
+                webinars_list,
                 customername,
                 country,
                 websiteUrl,
@@ -966,11 +1020,10 @@ def order():
 
         else:
             websiteUrl = get_website_url(website)
-            document = ""
-            document_ist = ""
 
         order_data = {
             "id": id,
+            "webinars": webinars_list,
             "topic": Webinar,
             "customeremail": customeremail,
             "paymentstatus": paymentstatus,
@@ -979,17 +1032,10 @@ def order():
             "ordertimezone": str(ordertimezone),
             "webinardate": webinardate,
             "session": session_data,
-            "sessionLive": request.form.get("sessionLive"),
-            "priceLive": request.form.get('priceLive'),
-            "sessionRecording": request.form.get("sessionRecording"),
-            "priceRecording": request.form.get('priceRecording'),
-            "sessionDigitalDownload": request.form.get('sessionDigitalDownload'),
-            "priceDigitalDownload": request.form.get('priceDigitalDownload'),
-            "sessionTranscript": request.form.get("sessionTranscript"),
-            "priceTranscript": request.form.get('priceTranscript'),
             "customername": customername,
             "billingemail": billingemail,
             "orderamount": orderamount,
+            "discount": discount,
             "country": country,
             "website": website,
             "document": document,
@@ -999,6 +1045,19 @@ def order():
             "order_type": "individual",
             "zip_code": zip_code
         }
+
+        # Keep old flat session fields for backward compat (old format only)
+        if webinars_from_json is None:
+            order_data.update({
+                "sessionLive": request.form.get("sessionLive"),
+                "priceLive": request.form.get('priceLive'),
+                "sessionRecording": request.form.get("sessionRecording"),
+                "priceRecording": request.form.get('priceRecording'),
+                "sessionDigitalDownload": request.form.get('sessionDigitalDownload'),
+                "priceDigitalDownload": request.form.get('priceDigitalDownload'),
+                "sessionTranscript": request.form.get("sessionTranscript"),
+                "priceTranscript": request.form.get('priceTranscript'),
+            })
 
         response_order = Order.update_order(order_data)
         response_user = Login.user_order(customeremail, paymentstatus, Webinar, website)
@@ -1018,9 +1077,8 @@ def order():
                 Thank you for your order!
 
                 Here are your Order Details:
-                Webinar Name: {Webinar}
-                Order Amount: {orderamount}
-                Session: {comma_separated_keys}
+                Order Amount: ${orderamount}
+                Session(s): {comma_separated_keys}
                 Invoice: {document}
                 Website: {websiteUrl}
 
@@ -1035,15 +1093,14 @@ def order():
                 <p>Thank you for your order!</p>
                 <p><b>Here are your Order Details:</b></p>
                 <ul>
-                    <li><b>Webinar Name:</b> {{ webinar_name }}</li>
-                    <li><b>Order Amount:</b> {{ order_amount }}</li>
-                    <li><b>Session:</b> {{ session }}</li>
+                    <li><b>Order Amount:</b> ${{ order_amount }}</li>
+                    <li><b>Session(s):</b> {{ session }}</li>
                     <li><b>Invoice:</b> <a href="{{ s3_link }}">{{ s3_link }}</a></li>
                     <li><b>Website:</b> <a href="{{ website_url }}">{{ website_url }}</a></li>
                 </ul>
                 <p>We appreciate your business and look forward to seeing you at the webinar.</p>
                 <p>Thanks & Regards!<br>Fullfillment Team</p>
-                """, webinar_name=Webinar, s3_link=document,
+                """, s3_link=document,
                      session=comma_separated_keys, order_amount=orderamount,
                      website_url=websiteUrl)
 

@@ -130,7 +130,7 @@ class Utility:
 
             return lines
 
-        documentTitle = website_name
+        documentTitle = "profstraining"
         title = "Invoice Details"
 
         leftSection = [
@@ -155,12 +155,7 @@ class Utility:
             f'#{orderID}'
         ]
 
-        webinarDetails = [
-            'Description'
-        ]
-
         max_chars_per_line = 60
-        wrapped_webinar_details = wrap_text(Webinar, max_chars_per_line)
 
         buffer = BytesIO()
         pdf = canvas.Canvas(buffer, pagesize=letter)
@@ -173,7 +168,7 @@ class Utility:
         pdf.saveState()
         pdf.translate(width / 2, height / 2)
         pdf.rotate(45)
-        pdf.drawCentredString(0, 0, website_name)
+        pdf.drawCentredString(0, 0, "profstraining")
         pdf.restoreState()
         pdf.setFillColor(colors.black)
 
@@ -222,22 +217,55 @@ class Utility:
 
         pdf.line(40, height - 320 - y_shift, width - 40, height - 320 - y_shift)
 
-        text = pdf.beginText(40, height - 340 - y_shift)
-        text.setFont("Helvetica-Bold", 11)
-        text.textLine(webinarDetails[0])
+        # Description section — supports both single-string (newsletter) and
+        # multi-webinar list (new order format)
+        DESC_Y = height - 340 - y_shift
+        LINE_H = 15  # points per rendered line
 
-        for line in wrapped_webinar_details:
-            text.textLine(line)
+        text = pdf.beginText(40, DESC_Y)
+        text.setFont("Helvetica-Bold", 11)
+        text.textLine("Description")
+        line_count = 1
+
+        if isinstance(Webinar, list):
+            for i, w in enumerate(Webinar):
+                if i > 0:
+                    text.setFont("Helvetica", 10)
+                    text.textLine("")
+                    line_count += 1
+                text.setFont("Helvetica-Bold", 10)
+                for tl in wrap_text(w.get("topic", ""), max_chars_per_line):
+                    text.textLine(tl)
+                    line_count += 1
+                text.setFont("Helvetica", 10)
+                for opt in w.get("trainingOptions", []):
+                    opt_str = (
+                        f"  {opt.get('optionName', '')}   "
+                        f"Qty: {opt.get('quantity', 1)}   "
+                        f"@ ${opt.get('price', 0)}   "
+                        f"= ${opt.get('totalPrice', 0)}"
+                    )
+                    text.textLine(opt_str)
+                    line_count += 1
+        else:
+            text.setFont("Helvetica", 10)
+            for line in wrap_text(Webinar, max_chars_per_line):
+                text.textLine(line)
+                line_count += 1
 
         pdf.drawText(text)
 
-        text = pdf.beginText(width - 180, height - 340 - y_shift)
+        text = pdf.beginText(width - 180, DESC_Y)
         text.setFont("Helvetica-Bold", 11)
         text.textLine('Total Price')
         text.textLine(f'${total_price}')
         pdf.drawText(text)
 
-        text = pdf.beginText(width - 180, height - 420 - y_shift)
+        # Subtotal section — positioned dynamically below the description
+        SUMMARY_Y = DESC_Y - (line_count * LINE_H) - 20
+        SUMMARY_Y = max(SUMMARY_Y, 175)  # keep above the footer
+
+        text = pdf.beginText(width - 180, SUMMARY_Y)
         text.setFont("Helvetica-Bold", 11)
         text.textLine(f'Subtotal: ${int(total_price)}')
         if int(discount) > 0:
@@ -312,7 +340,7 @@ class Utility:
 
             return lines
 
-        documentTitle = website_name
+        documentTitle = "profstraining"
         title = "Invoice Details"
 
         leftSection = [
@@ -337,12 +365,7 @@ class Utility:
             f'#{orderID}'
         ]
 
-        webinarDetails = [
-            'Description'
-        ]
-
         max_chars_per_line = 60
-        wrapped_webinar_details = wrap_text(Webinar, max_chars_per_line)
 
         buffer = BytesIO()
         pdf = canvas.Canvas(buffer, pagesize=letter)
@@ -355,7 +378,7 @@ class Utility:
         pdf.saveState()
         pdf.translate(width / 2, height / 2)
         pdf.rotate(45)
-        pdf.drawCentredString(0, 0, website_name)
+        pdf.drawCentredString(0, 0, "profstraining")
         pdf.restoreState()
         pdf.setFillColor(colors.black)
 
@@ -404,22 +427,55 @@ class Utility:
 
         pdf.line(40, height - 320 - y_shift, width - 40, height - 320 - y_shift)
 
-        text = pdf.beginText(40, height - 340 - y_shift)
-        text.setFont("Helvetica-Bold", 11)
-        text.textLine(webinarDetails[0])
+        # Description section — supports both single-string (newsletter) and
+        # multi-webinar list (new order format)
+        DESC_Y = height - 340 - y_shift
+        LINE_H = 15  # points per rendered line
 
-        for line in wrapped_webinar_details:
-            text.textLine(line)
+        text = pdf.beginText(40, DESC_Y)
+        text.setFont("Helvetica-Bold", 11)
+        text.textLine("Description")
+        line_count = 1
+
+        if isinstance(Webinar, list):
+            for i, w in enumerate(Webinar):
+                if i > 0:
+                    text.setFont("Helvetica", 10)
+                    text.textLine("")
+                    line_count += 1
+                text.setFont("Helvetica-Bold", 10)
+                for tl in wrap_text(w.get("topic", ""), max_chars_per_line):
+                    text.textLine(tl)
+                    line_count += 1
+                text.setFont("Helvetica", 10)
+                for opt in w.get("trainingOptions", []):
+                    opt_str = (
+                        f"  {opt.get('optionName', '')}   "
+                        f"Qty: {opt.get('quantity', 1)}   "
+                        f"@ ${opt.get('price', 0)}   "
+                        f"= ${opt.get('totalPrice', 0)}"
+                    )
+                    text.textLine(opt_str)
+                    line_count += 1
+        else:
+            text.setFont("Helvetica", 10)
+            for line in wrap_text(Webinar, max_chars_per_line):
+                text.textLine(line)
+                line_count += 1
 
         pdf.drawText(text)
 
-        text = pdf.beginText(width - 180, height - 340 - y_shift)
+        text = pdf.beginText(width - 180, DESC_Y)
         text.setFont("Helvetica-Bold", 11)
         text.textLine('Total Price')
         text.textLine(f'${total_price}')
         pdf.drawText(text)
 
-        text = pdf.beginText(width - 180, height - 420 - y_shift)
+        # Subtotal section — positioned dynamically below the description
+        SUMMARY_Y = DESC_Y - (line_count * LINE_H) - 20
+        SUMMARY_Y = max(SUMMARY_Y, 175)  # keep above the footer
+
+        text = pdf.beginText(width - 180, SUMMARY_Y)
         text.setFont("Helvetica-Bold", 11)
         text.textLine(f'Subtotal: ${int(total_price)}')
         if int(discount) > 0:
