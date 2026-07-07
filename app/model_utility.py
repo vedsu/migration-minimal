@@ -21,6 +21,12 @@ from reportlab.lib import colors
 from io import BytesIO
 
 
+def _fmt_amount(v):
+    """Format a monetary value: integer display when whole, 2dp otherwise."""
+    f = float(v)
+    return str(int(f)) if f == int(f) else f"{f:.2f}"
+
+
 class Utility:
 
     @staticmethod
@@ -111,7 +117,7 @@ class Utility:
         website_name = get_website_name(website)
         support_email = get_support_email(website)
 
-        total_price = int(orderamount) + int(discount)
+        total_price = float(orderamount) + float(discount)
 
         def wrap_text(text, max_chars_per_line):
             words = text.split()
@@ -267,10 +273,10 @@ class Utility:
 
         text = pdf.beginText(width - 180, SUMMARY_Y)
         text.setFont("Helvetica-Bold", 11)
-        text.textLine(f'Subtotal: ${int(total_price)}')
-        if int(discount) > 0:
-            text.textLine(f'Discount: -${int(discount)}')
-            text.textLine(f'Grand Total: ${int(orderamount)}')
+        text.textLine(f'Subtotal: ${_fmt_amount(total_price)}')
+        if float(discount) > 0:
+            text.textLine(f'Discount: -${_fmt_amount(discount)}')
+            text.textLine(f'Grand Total: ${_fmt_amount(orderamount)}')
         pdf.drawText(text)
 
         thankYouNote = 'Thank you for your Purchase'
@@ -321,7 +327,7 @@ class Utility:
         website_name = get_website_name(website)
         support_email = get_support_email(website)
 
-        total_price = int(orderamount) + int(discount)
+        total_price = float(orderamount) + float(discount)
 
         def wrap_text(text, max_chars_per_line):
             words = text.split()
@@ -477,10 +483,10 @@ class Utility:
 
         text = pdf.beginText(width - 180, SUMMARY_Y)
         text.setFont("Helvetica-Bold", 11)
-        text.textLine(f'Subtotal: ${int(total_price)}')
-        if int(discount) > 0:
-            text.textLine(f'Discount: -${int(discount)}')
-            text.textLine(f'Grand Total: ${int(orderamount)}')
+        text.textLine(f'Subtotal: ${_fmt_amount(total_price)}')
+        if float(discount) > 0:
+            text.textLine(f'Discount: -${_fmt_amount(discount)}')
+            text.textLine(f'Grand Total: ${_fmt_amount(orderamount)}')
         pdf.drawText(text)
 
         thankYouNote = 'Thank you for your Purchase'

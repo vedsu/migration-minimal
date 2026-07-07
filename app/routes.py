@@ -658,7 +658,7 @@ def corporateorder():
         keys = [list(item.keys())[0] for item in session_data]
         comma_separated_keys = ', '.join(keys)
 
-        discount = int(total_price) - int(orderamount)
+        discount = int(total_price) - float(orderamount)
 
         if paymentstatus == "purchased":
             billingemail = request.form.get("billingemail")
@@ -894,7 +894,7 @@ def order():
                     total_price += int(opt.get("totalPrice", 0))
                     session_data.append({opt.get("optionName", ""): opt.get("totalPrice")})
 
-            discount = total_price - int(orderamount)
+            discount = total_price - float(orderamount)
 
             topics = [w.get("topic", "") for w in webinars_list]
             Webinar = "; ".join(topics)
@@ -945,7 +945,7 @@ def order():
                 total_price += int(priceTranscript or 0)
                 session_data.append({"Transcript": priceTranscript})
 
-            discount = int(total_price) - int(orderamount or 0)
+            discount = int(total_price) - float(orderamount or 0)
 
             keys = [list(item.keys())[0] for item in session_data]
             comma_separated_keys = ', '.join(keys)
@@ -1170,7 +1170,7 @@ def newsletter_order():
         if paymentstatus == "purchased":
             billingemail = request.form.get("billingemail")
 
-            if int(orderamount) != 0:
+            if float(orderamount) != 0:
                 try:
                     newsletter_data = mongo.db.newsletter_data.find_one(
                         {
@@ -1185,7 +1185,7 @@ def newsletter_order():
 
                     if newsletter_data:
                         price_value = newsletter_data.get("price", 0)
-                        discount = int(price_value) - int(orderamount)
+                        discount = float(price_value) - float(orderamount)
                     else:
                         discount = 0
 
