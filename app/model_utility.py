@@ -120,6 +120,8 @@ class Utility:
         total_price = float(orderamount) + float(discount)
 
         def wrap_text(text, max_chars_per_line):
+            if not text:
+                return []
             words = text.split()
             lines = []
             current_line = ""
@@ -330,6 +332,8 @@ class Utility:
         total_price = float(orderamount) + float(discount)
 
         def wrap_text(text, max_chars_per_line):
+            if not text:
+                return []
             words = text.split()
             lines = []
             current_line = ""

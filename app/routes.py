@@ -911,7 +911,7 @@ def order():
             # ---- OLD FORMDATA FORMAT (Cart pending/purchased order) ----
             customeremail = request.form.get('customeremail')
             paymentstatus = request.form.get("paymentstatus")
-            Webinar = request.form.get("topic")
+            Webinar = request.form.get("topic") or ""
             orderamount = request.form.get("orderamount")
             webinardate = request.form.get("webinardate")
             billingemail = request.form.get("billingemail")
