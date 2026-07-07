@@ -188,7 +188,7 @@ def create_payment_intent():
 
         charge = stripe.Charge.create(
             customer=customer.id,
-            amount=data['amount'] * 100,
+            amount=int(round(float(data['amount']) * 100)),
             currency='usd',
             description=data['invoice_number']
         )
