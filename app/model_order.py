@@ -18,9 +18,24 @@ class Order():
     def update_order(order_data):
         return_data = order_data.copy()
         try:
+            # When completing a purchase, update the existing pending document
+            # so there is one canonical order record instead of two.
+            invoice_number = order_data.get("invoice_number", "")
+            if (order_data.get("paymentstatus") == "purchased"
+                    and invoice_number
+                    and invoice_number.startswith("ORDER")):
+                pending_id = invoice_number[len("ORDER"):]
+                fields = {k: v for k, v in order_data.items() if k not in ("_id", "id")}
+                result = mongo.db.order_data.update_one(
+                    {"id": pending_id, "paymentstatus": "Pending"},
+                    {"$set": fields}
+                )
+                if result.matched_count > 0:
+                    updated = mongo.db.order_data.find_one({"id": pending_id})
+                    return ({"success": True, "message": updated or return_data}), 201
+
             mongo.db.order_data.insert_one(order_data)
-           
-            return ({"success": True, "message": return_data}),201
+            return ({"success": True, "message": return_data}), 201
         except Exception as e:
             return ({"success": False, "message": str(e)}), 403
     @staticmethod
