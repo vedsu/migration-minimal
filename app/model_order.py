@@ -129,73 +129,123 @@ class Order():
                 
                 
                 for order in orders:
-                    
-                    live_url, recording_url, digitaldownload_url, transcript_url = None, None, None, None
+
                     o_id = order.get("id")
                     topic = order.get("topic")
                     customeremail = order.get("customeremail")
                     paymentstatus = order.get("paymentstatus")
-                    sessionLive = order.get("sessionLive") #True /False
-                    sessionRecording = order.get("sessionRecording") # True/ False
-                    sessionDigitalDownload = order.get('sessionDigitalDownload') # True or False
-                    sessionTranscript = order.get("sessionTranscript") # True or False
                     customername = order.get("customername")
                     document = order.get("document")
                     order_type = order.get("order_type")
                     total_attendee = order.get("total_attendee")
 
                     if paymentstatus == "purchased":
-                        projection ={"_id":0}
-                        webinar_data  = list(mongo.db.webinar_data.find({"topic":topic}, projection))
-                        if webinar_data:
-                            webinar = webinar_data[0]
-                            w_id = webinar.get("id")
-                            date = webinar.get("date")
-                            time = webinar.get("time")
-                            topic = webinar.get("topic")
-                            speaker = webinar.get("speaker")
-                            date_time = str(webinar.get("date_time"))
-                            timeZone = webinar.get("timeZone")
-                            duration = webinar.get("duration")
-                            urlLive = webinar.get("urlLive")
-                            urlRecording = webinar.get("urlRecording")
-                            urlDigitalDownload = webinar.get("urlDigitalDownload")
-                            urlTranscript = webinar.get("urlTranscript")
-                            handle_live = handle_timezone(date_time, timeZone)
-                            handle_other = handle_othertimezone(date_time, timeZone)
-                            
-                            if sessionLive == "true" and handle_live:
-                                live_url =  urlLive
-                            if sessionRecording == "true":
-                                # if sessionRecording == "true" and handle_other:
-                                recording_url = urlRecording
-                            if sessionDigitalDownload == "true":
-                                # if sessionDigitalDownload == "true" and handle_other:
-                                digitaldownload_url = urlDigitalDownload
-                            if sessionTranscript == "true":
-                            # if sessionTranscript == "true" and handle_other:
-                                transcript_url = urlTranscript
-                            
-                            dashboard_dict = {
-                            "o_id":o_id,
-                            "w_id":w_id,
-                            "customername":customername ,
-                            "webinar" : topic,
-                            "speaker" : speaker ,
-                            "date" : date,
-                            "time" : time,
-                            "timeZone" : timeZone,
-                            "duration" : duration,
-                            "live_url" : live_url,
-                            "recording_url": recording_url,
-                            "digitaldownload_url": digitaldownload_url,
-                            "transcript_url" : transcript_url,
-                            "document" : document,
-                            "order_type":order_type,
-                            "total_attendee":total_attendee
-                            }
+                        projection = {"_id": 0}
+                        webinars_in_order = order.get("webinars") or []
 
-                            dashboard_list.append(dashboard_dict)
+                        if webinars_in_order and webinars_in_order[0].get("trainingOptions") is not None:
+                            # New-format order: one dashboard card per webinar
+                            for w in webinars_in_order:
+                                w_topic = w.get("topic", "")
+                                if not w_topic:
+                                    continue
+                                option_names = {
+                                    opt.get("optionName", "")
+                                    for opt in w.get("trainingOptions", [])
+                                }
+                                live_url = recording_url = digitaldownload_url = transcript_url = None
+                                w_data_list = list(mongo.db.webinar_data.find({"topic": w_topic}, projection))
+                                if w_data_list:
+                                    wd = w_data_list[0]
+                                    date_time = str(wd.get("date_time", ""))
+                                    timeZone = wd.get("timeZone")
+                                    if "Live Session" in option_names and handle_timezone(date_time, timeZone):
+                                        live_url = wd.get("urlLive")
+                                    if "Recording" in option_names:
+                                        recording_url = wd.get("urlRecording")
+                                    if "Digital Download" in option_names:
+                                        digitaldownload_url = wd.get("urlDigitalDownload")
+                                    if "Transcript PDF" in option_names:
+                                        transcript_url = wd.get("urlTranscript")
+                                    dashboard_dict = {
+                                        "o_id": o_id,
+                                        "w_id": wd.get("id"),
+                                        "customername": customername,
+                                        "webinar": wd.get("topic", w_topic),
+                                        "speaker": wd.get("speaker"),
+                                        "date": wd.get("date"),
+                                        "time": wd.get("time"),
+                                        "timeZone": timeZone,
+                                        "duration": wd.get("duration"),
+                                        "live_url": live_url,
+                                        "recording_url": recording_url,
+                                        "digitaldownload_url": digitaldownload_url,
+                                        "transcript_url": transcript_url,
+                                        "document": document,
+                                        "order_type": order_type,
+                                        "total_attendee": total_attendee
+                                    }
+                                else:
+                                    # Webinar not yet in webinar_data; show basic entry
+                                    dashboard_dict = {
+                                        "o_id": o_id,
+                                        "w_id": None,
+                                        "customername": customername,
+                                        "webinar": w_topic,
+                                        "speaker": None,
+                                        "date": w.get("webinardate"),
+                                        "time": None,
+                                        "timeZone": None,
+                                        "duration": None,
+                                        "live_url": None,
+                                        "recording_url": None,
+                                        "digitaldownload_url": None,
+                                        "transcript_url": None,
+                                        "document": document,
+                                        "order_type": order_type,
+                                        "total_attendee": total_attendee
+                                    }
+                                dashboard_list.append(dashboard_dict)
+                        else:
+                            # Old-format order: uses flat sessionLive/sessionRecording fields
+                            sessionLive = order.get("sessionLive")
+                            sessionRecording = order.get("sessionRecording")
+                            sessionDigitalDownload = order.get("sessionDigitalDownload")
+                            sessionTranscript = order.get("sessionTranscript")
+                            live_url = recording_url = digitaldownload_url = transcript_url = None
+                            webinar_data = list(mongo.db.webinar_data.find({"topic": topic}, projection))
+                            if webinar_data:
+                                webinar = webinar_data[0]
+                                date_time = str(webinar.get("date_time"))
+                                timeZone = webinar.get("timeZone")
+                                handle_live = handle_timezone(date_time, timeZone)
+                                if sessionLive == "true" and handle_live:
+                                    live_url = webinar.get("urlLive")
+                                if sessionRecording == "true":
+                                    recording_url = webinar.get("urlRecording")
+                                if sessionDigitalDownload == "true":
+                                    digitaldownload_url = webinar.get("urlDigitalDownload")
+                                if sessionTranscript == "true":
+                                    transcript_url = webinar.get("urlTranscript")
+                                dashboard_dict = {
+                                    "o_id": o_id,
+                                    "w_id": webinar.get("id"),
+                                    "customername": customername,
+                                    "webinar": webinar.get("topic", topic),
+                                    "speaker": webinar.get("speaker"),
+                                    "date": webinar.get("date"),
+                                    "time": webinar.get("time"),
+                                    "timeZone": timeZone,
+                                    "duration": webinar.get("duration"),
+                                    "live_url": live_url,
+                                    "recording_url": recording_url,
+                                    "digitaldownload_url": digitaldownload_url,
+                                    "transcript_url": transcript_url,
+                                    "document": document,
+                                    "order_type": order_type,
+                                    "total_attendee": total_attendee
+                                }
+                                dashboard_list.append(dashboard_dict)
 
                         
         except Exception as e:

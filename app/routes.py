@@ -987,6 +987,8 @@ def order():
             comma_separated_keys = ', '.join(keys)
 
         # ---- COMMON: PDF generation for purchased orders ----
+        # When updating an existing pending order, keep its original ID in the PDF
+        pdf_order_id = pending_order.get("id") if pending_order else id
         if paymentstatus == "purchased" and order_datetimezone_raw:
             date_time_format = "%a, %d %b %Y %H:%M:%S %Z"
             date_time_obj = datetime.datetime.strptime(order_datetimezone_raw, date_time_format)
@@ -1018,7 +1020,7 @@ def order():
                 invoice_number,
                 discount,
                 zip_code,
-                id,
+                pdf_order_id,
                 website
             )
 
@@ -1033,7 +1035,7 @@ def order():
                 invoice_number,
                 discount,
                 zip_code,
-                id,
+                pdf_order_id,
                 website
             )
 
