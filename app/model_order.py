@@ -31,7 +31,7 @@ class Order():
                     {"$set": fields}
                 )
                 if result.matched_count > 0:
-                    updated = mongo.db.order_data.find_one({"id": pending_id})
+                    updated = mongo.db.order_data.find_one({"id": pending_id}, {"_id": 0})
                     return ({"success": True, "message": updated or return_data}), 201
 
             mongo.db.order_data.insert_one(order_data)
