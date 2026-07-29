@@ -115,7 +115,16 @@ class Utility:
     ):
         website = normalize_website(website)
         website_name = get_website_name(website)
+        # support_email = get_support_email(website)
         support_email = get_support_email(website)
+
+        if websiteUrl and "hrprofs.com" in websiteUrl.lower():
+            websiteUrl = "profstraining.com"
+
+        if support_email and "hrprofs.com" in support_email.lower():
+            support_email = "support@profstraining.com"
+
+
 
         total_price = float(orderamount) + float(discount)
 
@@ -327,7 +336,15 @@ class Utility:
     ):
         website = normalize_website(website)
         website_name = get_website_name(website)
+        # support_email = get_support_email(website)
         support_email = get_support_email(website)
+
+        if websiteUrl and "hrprofs.com" in websiteUrl.lower():
+            websiteUrl = "profstraining.com"
+
+        if support_email and "hrprofs.com" in support_email.lower():
+            support_email = "support@profstraining.com"
+
 
         total_price = float(orderamount) + float(discount)
 
