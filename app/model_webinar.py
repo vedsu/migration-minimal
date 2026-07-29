@@ -70,8 +70,13 @@ class Webinar:
                 "date": webinar.get("date_time"),
                 "time": webinar.get("time"),
                 "timeZone": webinar.get("timeZone"),
+                # "duration": webinar.get("duration"),
+                # "category": webinar.get("category"),
                 "duration": webinar.get("duration"),
+                "creditScore": webinar.get("creditScore"),
+                "certificate": webinar.get("certificate"),
                 "category": webinar.get("category"),
+
 
                 "sessionLive": webinar.get("sessionLive"),
                 "priceLive": webinar.get("priceLive"),
@@ -167,8 +172,13 @@ class Webinar:
                     "date": webinar.get("date"),
                     "time": webinar.get("time"),
                     "timeZone": webinar.get("timeZone"),
+                    # "duration": webinar.get("duration"),
+                    # "category": webinar.get("category"),
                     "duration": webinar.get("duration"),
+                    "creditScore": webinar.get("creditScore"),
+                    "certificate": webinar.get("certificate"),
                     "category": webinar.get("category"),
+
 
                     "sessionLive": webinar.get("sessionLive"),
                     "priceLive": webinar.get("priceLive"),
