@@ -57,6 +57,20 @@ class Webinar:
             if not speaker_detail:
                 speaker_detail = {}
 
+            certificate_name = webinar.get("certificate")
+            certificate_detail = {}
+
+            if certificate_name and certificate_name != "None":
+                certificate_detail = mongo.db.certificate_data.find_one(
+                    {"name": certificate_name},
+                    {
+                        "_id": 0,
+                        "url": 1,
+                        "description": 1,
+                        "id": 1
+                    }
+                ) or {}
+
             webinar_data_dict = {
                 "id": webinar.get("id"),
                 "topic": webinar.get("topic"),
@@ -74,7 +88,9 @@ class Webinar:
                 # "category": webinar.get("category"),
                 "duration": webinar.get("duration"),
                 "creditScore": webinar.get("creditScore"),
-                "certificate": webinar.get("certificate"),
+                "certificate": certificate_name,
+                "certificate_image": certificate_detail.get("url"),
+                "certificate_description": certificate_detail.get("description"),
                 "category": webinar.get("category"),
 
 
