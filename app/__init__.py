@@ -41,7 +41,7 @@ hrprofs_secret = get_secret("hrprofs")
 # Using PHARMAPROFS secret for common DB and S3 values.
 # --------------------------------------------------
 
-common_secret = pharmaprofs_secret
+common_secret = hrprofs_secret
 stripe_secret_key = common_secret["stripe_secret_key"]
 
 
