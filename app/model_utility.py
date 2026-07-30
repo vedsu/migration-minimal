@@ -147,7 +147,7 @@ class Utility:
 
             return lines
 
-        documentTitle = "profstraining"
+        documentTitle = "ProfTraining"
         title = "Invoice Details"
 
         leftSection = [
@@ -182,7 +182,7 @@ class Utility:
         pdf.saveState()
         pdf.translate(width / 2, height / 2)
         pdf.rotate(45)
-        pdf.drawCentredString(0, 0, "profstraining")
+        pdf.drawCentredString(0, 0, "ProfTraining")
         pdf.restoreState()
         pdf.setFillColor(colors.black)
 
@@ -220,6 +220,11 @@ class Utility:
         for line in customerDetails[1:]:
             text.textLine(line)
 
+        pdf.drawText(text)
+
+        text = pdf.beginText(width - 180, height - 190 - y_shift)
+        text.setFont("Helvetica-Bold", 11)
+        text.textLine(f'#{invoice_number}')
         pdf.drawText(text)
 
         pdf.line(40, height - 335 - y_shift, width - 40, height - 335 - y_shift)
@@ -357,7 +362,7 @@ class Utility:
 
             return lines
 
-        documentTitle = "profstraining"
+        documentTitle = "ProfTraining"
         title = "Invoice Details"
 
         leftSection = [
@@ -392,7 +397,7 @@ class Utility:
         pdf.saveState()
         pdf.translate(width / 2, height / 2)
         pdf.rotate(45)
-        pdf.drawCentredString(0, 0, "profstraining")
+        pdf.drawCentredString(0, 0, "ProfTraining")
         pdf.restoreState()
         pdf.setFillColor(colors.black)
 
@@ -430,6 +435,11 @@ class Utility:
         for line in customerDetails[1:]:
             text.textLine(line)
 
+        pdf.drawText(text)
+
+        text = pdf.beginText(width - 180, height - 190 - y_shift)
+        text.setFont("Helvetica-Bold", 11)
+        text.textLine(f'#{invoice_number}')
         pdf.drawText(text)
 
         pdf.line(40, height - 335 - y_shift, width - 40, height - 335 - y_shift)

@@ -23,8 +23,8 @@ class Order():
             invoice_number = order_data.get("invoice_number", "")
             if (order_data.get("paymentstatus") == "purchased"
                     and invoice_number
-                    and invoice_number.startswith("ORDER")):
-                pending_id = invoice_number[len("ORDER"):]
+                    and invoice_number.startswith("PT")):
+                pending_id = invoice_number[len("PT"):]
                 fields = {k: v for k, v in order_data.items() if k not in ("_id", "id")}
                 result = mongo.db.order_data.update_one(
                     {"id": pending_id, "paymentstatus": "Pending"},

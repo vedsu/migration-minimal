@@ -930,8 +930,8 @@ def order():
             # When completing a purchase, load webinar/session data from the existing
             # pending order. PaymentSuccess.js only sends billing/payment fields and
             # the cart may already be cleared by the time this runs.
-            if paymentstatus == "purchased" and invoice_number and invoice_number.startswith("ORDER"):
-                pending_id = invoice_number[len("ORDER"):]
+            if paymentstatus == "purchased" and invoice_number and invoice_number.startswith("PT"):
+                pending_id = invoice_number[len("PT"):]
                 pending_order = mongo.db.order_data.find_one(
                     {"id": pending_id, "paymentstatus": "Pending"}
                 )
