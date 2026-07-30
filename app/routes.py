@@ -592,6 +592,7 @@ def corporateorder():
         current_time_ist = None
         invoice_number = None
         country = None
+        state = None
         zip_code = None
         discount = 0
         total_price = 0
@@ -664,6 +665,7 @@ def corporateorder():
             billingemail = request.form.get("billingemail")
             customername = request.form.get("customername")
             country = request.form.get("country")
+            state = request.form.get("state")
             attendees = request.form.get("attendees")
             zip_code = request.form.get("zipcode")
 
@@ -699,7 +701,7 @@ def corporateorder():
                 invoice_number,
                 discount,
                 zip_code,
-                id,
+                state,
                 website
             )
 
@@ -714,7 +716,7 @@ def corporateorder():
                 invoice_number,
                 discount,
                 zip_code,
-                id,
+                state,
                 website
             )
 
@@ -765,11 +767,12 @@ def corporateorder():
         Order.update_order(order_data)
 
         if paymentstatus == "purchased":
+            email_recipients = list({e for e in [billingemail, customeremail] if e})
             try:
                 msg = Message(
                     'Order Confirmation and Thank You',
                     sender=sender,
-                    recipients=[billingemail],
+                    recipients=email_recipients,
                     bcc=['fulfillmentteam@aol.com']
                 )
 
@@ -818,6 +821,7 @@ def corporateorder():
                 }
 
             except Exception as e:
+                print(f"[MAIL ERROR] corporateorder confirmation to {email_recipients}: {e}")
                 response_confirmationmail = {
                     "success": False,
                     "message": str(e)
@@ -863,6 +867,7 @@ def order():
         current_time_ist = None
         invoice_number = None
         country = None
+        state = None
         zip_code = None
         customername = None
         billingemail = None
@@ -884,6 +889,7 @@ def order():
             billingemail = json_data.get("billingemail")
             customername = json_data.get("customername")
             country = json_data.get("country")
+            state = json_data.get("state")
             zip_code = json_data.get("zipcode")
             order_datetimezone_raw = json_data.get("order_datetimezone")
             invoice_number = json_data.get("invoice_number")
@@ -916,6 +922,7 @@ def order():
             billingemail = request.form.get("billingemail")
             customername = request.form.get("customername")
             country = request.form.get("country")
+            state = request.form.get("state")
             zip_code = request.form.get("zipcode")
             order_datetimezone_raw = request.form.get("order_datetimezone")
             invoice_number = request.form.get("invoice_number")
@@ -1020,7 +1027,7 @@ def order():
                 invoice_number,
                 discount,
                 zip_code,
-                pdf_order_id,
+                state,
                 website
             )
 
@@ -1035,7 +1042,7 @@ def order():
                 invoice_number,
                 discount,
                 zip_code,
-                pdf_order_id,
+                state,
                 website
             )
 
@@ -1084,11 +1091,59 @@ def order():
         response_user = Login.user_order(customeremail, paymentstatus, Webinar, website)
 
         if paymentstatus == "purchased":
+            email_recipients = list({e for e in [billingemail, customeremail] if e})
+
+            # Auto-create guest account if the buyer has no existing account
+            if customeremail:
+                existing_user = mongo.db.user_data.find_one(
+                    {"email": customeremail, "website": website}
+                )
+                if not existing_user:
+                    auto_password = ''.join(
+                        random.choices(string.ascii_letters + string.digits, k=10)
+                    )
+                    mongo.db.user_data.insert_one({
+                        "name": customername or customeremail,
+                        "role": {"attendee": True},
+                        "email": customeremail,
+                        "contact": "",
+                        "password": auto_password,
+                        "UserType": "Attendee",
+                        "website": website,
+                        "websiteUrl": websiteUrl,
+                        "history_purchased": [Webinar],
+                        "history_pending": [],
+                        "newsletter_purchased": [],
+                        "newsletter_pending": []
+                    })
+                    try:
+                        creds_msg = Message(
+                            'Your Account Credentials',
+                            sender=sender,
+                            recipients=[customeremail]
+                        )
+                        creds_msg.html = render_template_string("""
+                        <p>Dear {{ name }},</p>
+                        <p>An account has been created for you on <a href="{{ website }}">{{ website }}</a>.</p>
+                        <p><b>Your login credentials:</b></p>
+                        <ul>
+                            <li><b>Email:</b> {{ email }}</li>
+                            <li><b>Password:</b> {{ password }}</li>
+                        </ul>
+                        <p>Please keep this information secure.</p>
+                        <p>Thanks & Regards!<br>Webinar Organizer Team</p>
+                        """, name=customername or customeremail,
+                             email=customeremail, password=auto_password, website=websiteUrl)
+                        mail.send(creds_msg)
+                        print(f"[MAIL] Guest credentials sent to {customeremail}")
+                    except Exception as cred_e:
+                        print(f"[MAIL ERROR] Guest credentials email failed for {customeremail}: {cred_e}")
+
             try:
                 msg = Message(
                     'Order Confirmation and Thank You',
                     sender=sender,
-                    recipients=[billingemail],
+                    recipients=email_recipients,
                     bcc=['fulfillmentteam@aol.com']
                 )
 
@@ -1133,6 +1188,7 @@ def order():
                 }
 
             except Exception as e:
+                print(f"[MAIL ERROR] order confirmation to {email_recipients}: {e}")
                 response_confirmationmail = {
                     "success": False,
                     "message": str(e)
@@ -1165,6 +1221,7 @@ def newsletter_order():
         invoice_number = None
 
         zip_code = "N/A"
+        state = None
         discount = 0
         billingemail = None
         customeremail = None
@@ -1215,6 +1272,7 @@ def newsletter_order():
 
                 customername = request.form.get("customername")
                 country = request.form.get("country")
+                state = request.form.get("state")
                 zip_code = request.form.get("zipcode")
 
             order_datetimezone = request.form.get("order_datetimezone")
@@ -1267,7 +1325,7 @@ def newsletter_order():
                 invoice_number,
                 discount,
                 zip_code,
-                id,
+                state,
                 website
             )
 
@@ -1282,7 +1340,7 @@ def newsletter_order():
                 invoice_number,
                 discount,
                 zip_code,
-                id,
+                state,
                 website
             )
 
@@ -1324,11 +1382,59 @@ def newsletter_order():
         Order.update_order(order_data)
 
         if paymentstatus == "purchased":
+            email_recipients = list({e for e in [billingemail, customeremail] if e})
+
+            # Auto-create guest account if the buyer has no existing account
+            if customeremail:
+                existing_user = mongo.db.user_data.find_one(
+                    {"email": customeremail, "website": website}
+                )
+                if not existing_user:
+                    auto_password = ''.join(
+                        random.choices(string.ascii_letters + string.digits, k=10)
+                    )
+                    mongo.db.user_data.insert_one({
+                        "name": customername or customeremail,
+                        "role": {"attendee": True},
+                        "email": customeremail,
+                        "contact": "",
+                        "password": auto_password,
+                        "UserType": "Attendee",
+                        "website": website,
+                        "websiteUrl": websiteUrl,
+                        "history_purchased": [],
+                        "history_pending": [],
+                        "newsletter_purchased": [newsletter],
+                        "newsletter_pending": []
+                    })
+                    try:
+                        creds_msg = Message(
+                            'Your Account Credentials',
+                            sender=sender,
+                            recipients=[customeremail]
+                        )
+                        creds_msg.html = render_template_string("""
+                        <p>Dear {{ name }},</p>
+                        <p>An account has been created for you on <a href="{{ website }}">{{ website }}</a>.</p>
+                        <p><b>Your login credentials:</b></p>
+                        <ul>
+                            <li><b>Email:</b> {{ email }}</li>
+                            <li><b>Password:</b> {{ password }}</li>
+                        </ul>
+                        <p>Please keep this information secure.</p>
+                        <p>Thanks & Regards!<br>Webinar Organizer Team</p>
+                        """, name=customername or customeremail,
+                             email=customeremail, password=auto_password, website=websiteUrl)
+                        mail.send(creds_msg)
+                        print(f"[MAIL] Guest credentials sent to {customeremail}")
+                    except Exception as cred_e:
+                        print(f"[MAIL ERROR] Guest credentials email failed for {customeremail}: {cred_e}")
+
             try:
                 msg = Message(
                     'Order Confirmation and Thank You',
                     sender=sender,
-                    recipients=[billingemail],
+                    recipients=email_recipients,
                     bcc=['fulfillmentteam@aol.com']
                 )
 
@@ -1372,6 +1478,7 @@ def newsletter_order():
                 }
 
             except Exception as e:
+                print(f"[MAIL ERROR] newsletterorder confirmation to {email_recipients}: {e}")
                 response_confirmationmail = {
                     "success": False,
                     "message": str(e)

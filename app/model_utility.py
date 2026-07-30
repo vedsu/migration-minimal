@@ -110,7 +110,7 @@ class Utility:
         invoice_number,
         discount,
         zip_code,
-        orderID,
+        state=None,
         website=None
     ):
         website = normalize_website(website)
@@ -165,11 +165,8 @@ class Utility:
             f'Name : {customername}',
             f'Email : {billingemail}',
             f'Country : {country}',
+            f'State : {state or "N/A"}',
             f'Zip Code : {zip_code}'
-        ]
-
-        orderDetails = [
-            f'#{orderID}'
         ]
 
         max_chars_per_line = 60
@@ -225,14 +222,7 @@ class Utility:
 
         pdf.drawText(text)
 
-        text = pdf.beginText(width - 180, height - 190 - y_shift)
-
-        for line in orderDetails:
-            text.textLine(line)
-
-        pdf.drawText(text)
-
-        pdf.line(40, height - 320 - y_shift, width - 40, height - 320 - y_shift)
+        pdf.line(40, height - 335 - y_shift, width - 40, height - 335 - y_shift)
 
         # Description section — supports both single-string (newsletter) and
         # multi-webinar list (new order format)
@@ -331,7 +321,7 @@ class Utility:
         invoice_number,
         discount,
         zip_code,
-        orderID,
+        state=None,
         website=None
     ):
         website = normalize_website(website)
@@ -385,11 +375,8 @@ class Utility:
             f'Name : {customername}',
             f'Email : {billingemail}',
             f'Country : {country}',
+            f'State : {state or "N/A"}',
             f'Zip Code : {zip_code}'
-        ]
-
-        orderDetails = [
-            f'#{orderID}'
         ]
 
         max_chars_per_line = 60
@@ -445,14 +432,7 @@ class Utility:
 
         pdf.drawText(text)
 
-        text = pdf.beginText(width - 180, height - 190 - y_shift)
-
-        for line in orderDetails:
-            text.textLine(line)
-
-        pdf.drawText(text)
-
-        pdf.line(40, height - 320 - y_shift, width - 40, height - 320 - y_shift)
+        pdf.line(40, height - 335 - y_shift, width - 40, height - 335 - y_shift)
 
         # Description section — supports both single-string (newsletter) and
         # multi-webinar list (new order format)
