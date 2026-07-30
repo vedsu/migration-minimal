@@ -147,7 +147,7 @@ class Utility:
 
             return lines
 
-        documentTitle = "ProfTraining"
+        documentTitle = "ProfsTraining"
         title = "Invoice Details"
 
         leftSection = [
@@ -182,7 +182,8 @@ class Utility:
         pdf.saveState()
         pdf.translate(width / 2, height / 2)
         pdf.rotate(45)
-        pdf.drawCentredString(0, 0, "ProfTraining")
+        # pdf.drawCentredString(0, 0, "ProfTraining")
+        pdf.drawCentredString(0, 0, documentTitle)
         pdf.restoreState()
         pdf.setFillColor(colors.black)
 
@@ -227,11 +228,23 @@ class Utility:
         text.textLine(f'#{invoice_number}')
         pdf.drawText(text)
 
-        pdf.line(40, height - 335 - y_shift, width - 40, height - 335 - y_shift)
+        # pdf.line(40, height - 335 - y_shift, width - 40, height - 335 - y_shift)
+        # Horizontal divider above the Description section
+        DESCRIPTION_DIVIDER_Y = height - 335 - y_shift
+        
+        pdf.line(
+            40,
+            DESCRIPTION_DIVIDER_Y,
+            width - 40,
+            DESCRIPTION_DIVIDER_Y
+        )
+        
+        # Keep Description and Total Price headings below the divider
+        DESC_Y = DESCRIPTION_DIVIDER_Y - 24
 
         # Description section — supports both single-string (newsletter) and
         # multi-webinar list (new order format)
-        DESC_Y = height - 340 - y_shift
+        # DESC_Y = height - 340 - y_shift
         LINE_H = 15  # points per rendered line
 
         text = pdf.beginText(40, DESC_Y)
@@ -362,7 +375,7 @@ class Utility:
 
             return lines
 
-        documentTitle = "ProfTraining"
+        documentTitle = "ProfsTraining"
         title = "Invoice Details"
 
         leftSection = [
@@ -397,7 +410,8 @@ class Utility:
         pdf.saveState()
         pdf.translate(width / 2, height / 2)
         pdf.rotate(45)
-        pdf.drawCentredString(0, 0, "ProfTraining")
+        # pdf.drawCentredString(0, 0, "ProfTraining")
+        pdf.drawCentredString(0, 0, documentTitle)
         pdf.restoreState()
         pdf.setFillColor(colors.black)
 
@@ -442,11 +456,23 @@ class Utility:
         text.textLine(f'#{invoice_number}')
         pdf.drawText(text)
 
-        pdf.line(40, height - 335 - y_shift, width - 40, height - 335 - y_shift)
+        # pdf.line(40, height - 335 - y_shift, width - 40, height - 335 - y_shift)
+        # Horizontal divider above the Description section
+        DESCRIPTION_DIVIDER_Y = height - 335 - y_shift
+        
+        pdf.line(
+            40,
+            DESCRIPTION_DIVIDER_Y,
+            width - 40,
+            DESCRIPTION_DIVIDER_Y
+        )
+        
+        # Keep Description and Total Price headings below the divider
+        DESC_Y = DESCRIPTION_DIVIDER_Y - 24
 
         # Description section — supports both single-string (newsletter) and
         # multi-webinar list (new order format)
-        DESC_Y = height - 340 - y_shift
+        # DESC_Y = height - 340 - y_shift
         LINE_H = 15  # points per rendered line
 
         text = pdf.beginText(40, DESC_Y)
